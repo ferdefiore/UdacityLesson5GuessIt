@@ -46,7 +46,6 @@ class GameFragment : Fragment() {
         //get reference to the viewmodel and create
         Log.i("GameFragment","Called ViewModelProviders.of")
         viewModel = ViewModelProviders.of(this).get(GameViewModel::class.java)
-
         // Inflate view and obtain an instance of the binding class
         binding = DataBindingUtil.inflate(
                 inflater,
@@ -54,14 +53,7 @@ class GameFragment : Fragment() {
                 container,
                 false
         )
-
-        binding.correctButton.setOnClickListener {
-            viewModel.onCorrect()
-        }
-        binding.skipButton.setOnClickListener {
-            viewModel.onSkip()
-        }
-
+        binding.gameViewModel = viewModel
         viewModel.score.observe(this, Observer { newScore ->
             binding.scoreText.text = newScore.toString()
         })
