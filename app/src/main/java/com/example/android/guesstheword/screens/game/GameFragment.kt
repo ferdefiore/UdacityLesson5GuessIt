@@ -54,22 +54,14 @@ class GameFragment : Fragment() {
                 false
         )
         binding.gameViewModel = viewModel
-        viewModel.score.observe(this, Observer { newScore ->
-            binding.scoreText.text = newScore.toString()
-        })
-        viewModel.word.observe(this, Observer { newWord ->
-            binding.wordText.text = newWord
-        })
+        binding.lifecycleOwner = this
+
         viewModel.eventGameFinish.observe(this, Observer { hasFinished ->
             if (hasFinished){
                 gameFinished()
                 viewModel.onGameFinishedComplete()
             }
         })
-        viewModel.currentTime.observe(this, Observer { newTime ->
-            binding.timerText.text = DateUtils.formatElapsedTime(newTime/1000)
-        })
-
         return binding.root
 
     }
