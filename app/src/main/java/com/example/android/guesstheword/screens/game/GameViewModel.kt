@@ -8,7 +8,19 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 
+private val CORRECT_BUZZ_PATTERN = longArrayOf(100, 100, 100, 100, 100, 100)
+private val PANIC_BUZZ_PATTERN = longArrayOf(0, 200)
+private val GAME_OVER_BUZZ_PATTERN = longArrayOf(0, 2000)
+private val NO_BUZZ_PATTERN = longArrayOf(0)
+
 class GameViewModel : ViewModel() {
+
+    enum class BuzzType(var pattern: LongArray) {
+        CORRECT(CORRECT_BUZZ_PATTERN),
+        GAME_OVER(GAME_OVER_BUZZ_PATTERN),
+        COUNTDOWN_PANIC(PANIC_BUZZ_PATTERN),
+        NO_BUZZ(NO_BUZZ_PATTERN)
+    }
 
     companion object {
         // These represent different important times
@@ -21,6 +33,10 @@ class GameViewModel : ViewModel() {
     }
 
     private val timer : CountDownTimer
+
+    private val _buzzer = MutableLiveData<BuzzType>()
+    val buzzer : LiveData<BuzzType>
+        get() = _buzzer
 
     private val _currentTime = MutableLiveData<Long>()
     val currentTime: LiveData<Long>
@@ -57,18 +73,23 @@ class GameViewModel : ViewModel() {
         _eventGameFinish.value = false
 
         timer = object : CountDownTimer(COUNTDOWN_TIME, ONE_SECOND) {
-
+        var panic : Boolean = true
             override fun onTick(millisUntilFinished: Long) {
                 _currentTime.value = millisUntilFinished
+                if (panic && millisUntilFinished < 5000L) {
+                    _buzzer.value = BuzzType.COUNTDOWN_PANIC
+                    panic = false
+                }
             }
 
             override fun onFinish() {
                 _eventGameFinish.value = true
+                _buzzer.value = BuzzType.GAME_OVER
             }
         }
         timer.start()
 
-        //DateUtils.formatElapsedTime()
+        _buzzer.value = BuzzType.NO_BUZZ
 
     }
 
@@ -129,10 +150,13 @@ class GameViewModel : ViewModel() {
 
     fun onCorrect() {
         _score.value = (_score.value)?.plus(1)
+        _buzzer.value = BuzzType.CORRECT
         nextWord()
     }
 
     fun onGameFinishedComplete(){
-        _eventGameFinish.value=false
+        _eventGameFinish.value = false
+        //aprovecho el complete este para no crear uno nuevo solamente por el buzz
+        _buzzer.value = BuzzType.NO_BUZZ
     }
 }
